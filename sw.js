@@ -1,6 +1,6 @@
 // Execulist service worker
 // Bump CACHE_VERSION whenever you deploy changes — old caches are purged on activate.
-const CACHE_VERSION = 'execulist-v1';
+const CACHE_VERSION = 'execulist-v2';
 const ASSETS = [
   './',
   './index.html',
