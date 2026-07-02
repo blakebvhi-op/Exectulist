@@ -25,123 +25,121 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;overflow:hidden}
-  body{
-    background:var(--ink); color:var(--text);
-    font-family:'IBM Plex Sans',system-ui,sans-serif;
-    display:flex;flex-direction:column;
-    -webkit-user-select:none;user-select:none;
-  }
+  body{background:var(--ink);color:var(--text);font-family:'IBM Plex Sans',system-ui,sans-serif;
+    display:flex;flex-direction:column;-webkit-user-select:none;user-select:none}
   .app{display:flex;flex-direction:column;height:100%;padding-top:var(--safe-top)}
 
-  /* header */
-  .head{padding:14px 18px 12px;border-bottom:1px solid var(--line-soft);flex-shrink:0}
-  .head .row{display:flex;justify-content:space-between;align-items:flex-end}
-  .date{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.14em;
-    color:var(--muted);text-transform:uppercase}
-  .brand{font-family:'Archivo',sans-serif;font-weight:800;font-size:28px;letter-spacing:-.02em;
-    line-height:1;margin-top:4px}
+  .head{padding:12px 18px 12px;border-bottom:1px solid var(--line-soft);flex-shrink:0}
+  .toprow{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .date{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+  .topright{display:flex;align-items:center;gap:8px}
+  .streak{display:flex;align-items:center;gap:4px;background:var(--panel);border:1px solid var(--line);
+    border-radius:99px;padding:3px 9px 3px 7px;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;color:var(--text);cursor:pointer}
+  .streak.cold{opacity:.5}
+  .streak .fl{font-size:12px;line-height:1;filter:grayscale(1)}
+  .streak.hot .fl{filter:none}
+  .gear{background:none;border:none;color:var(--muted-2);cursor:pointer;padding:2px;display:flex}
+  .gear:active{color:var(--text)} .gear svg{width:19px;height:19px}
+  .row{display:flex;justify-content:space-between;align-items:flex-end}
+  .brand{font-family:'Archivo',sans-serif;font-weight:800;font-size:28px;letter-spacing:-.02em;line-height:1}
   .brand .r{color:var(--brand)}
   .progress{text-align:right}
   .progress .big{font-family:'Archivo',sans-serif;font-weight:800;font-size:23px;line-height:1}
   .progress .big .sub{color:var(--muted-2)}
-  .progress .lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted-2);
-    letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+  .progress .lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted-2);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
   .bar{height:4px;background:var(--line);border-radius:99px;margin-top:11px;overflow:hidden}
-  .bar > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--brand-dim),var(--brand));
-    border-radius:99px;transition:width .45s cubic-bezier(.2,.8,.2,1)}
+  .bar > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--brand-dim),var(--brand));border-radius:99px;transition:width .45s cubic-bezier(.2,.8,.2,1)}
 
-  /* legend */
-  .legend{display:flex;justify-content:space-between;gap:8px;padding:9px 18px;
-    border-bottom:1px solid var(--line-soft);
+  .legend{display:flex;justify-content:space-between;gap:8px;padding:9px 18px;border-bottom:1px solid var(--line-soft);
     font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.02em;color:var(--muted);flex-shrink:0}
   .legend .k{display:flex;align-items:center;gap:5px}
-  .legend .sw{width:15px;height:15px;border-radius:4px;display:flex;align-items:center;
-    justify-content:center;font-weight:600;color:#0b0c10;font-size:9.5px}
+  .legend .sw{width:15px;height:15px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:600;color:#0b0c10;font-size:9.5px}
 
-  /* grid */
-  .grid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
-    gap:1px;background:var(--line-soft);overflow:hidden;min-height:0}
+  .nudge{flex-shrink:0;padding:8px 18px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;
+    letter-spacing:.01em;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;gap:8px;
+    transition:background .2s,color .2s}
+  .nudge.calm{color:var(--muted);background:transparent}
+  .nudge.warn{color:#f0b552;background:rgba(232,145,42,.08)}
+  .nudge.danger{color:#ff6b6f;background:rgba(229,72,77,.10)}
+  .nudge.win{color:#4bd699;background:rgba(47,181,116,.10)}
+  .nudge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+  .grid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:1px;background:var(--line-soft);overflow:hidden;min-height:0}
   .quad{background:var(--base);display:flex;flex-direction:column;min-height:0;overflow:hidden}
-  .qhead{display:flex;align-items:center;gap:8px;padding:12px 12px 8px;flex-shrink:0}
-  .qicon{width:26px;height:26px;border-radius:8px;background:var(--panel);border:1px solid var(--line);
-    display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0}
+  .qhead{display:flex;align-items:center;gap:8px;padding:11px 12px 7px;flex-shrink:0}
+  .qicon{width:26px;height:26px;border-radius:8px;background:var(--panel);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0}
   .qicon svg{width:14px;height:14px}
   .qname{font-family:'Archivo',sans-serif;font-weight:700;font-size:13.5px;flex:1}
-  .qcount{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted-2);
-    background:var(--panel);border-radius:99px;padding:2px 8px}
-  .qlist{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 12px;
-    display:flex;flex-direction:column;gap:7px;
-    scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  .qcount{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted-2);background:var(--panel);border-radius:99px;padding:2px 8px}
+  .qlist{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 12px;display:flex;flex-direction:column;gap:7px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
   .qlist::-webkit-scrollbar{width:4px}
   .qlist::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
-  .empty{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted-2);
-    text-align:center;padding:14px 6px;opacity:.6;letter-spacing:.03em}
+  .empty{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted-2);text-align:center;padding:14px 6px;opacity:.6;letter-spacing:.03em}
 
-  /* task */
-  .task{display:flex;align-items:flex-start;gap:8px;background:var(--panel);
-    border:1px solid var(--line-soft);border-radius:11px;padding:9px 6px 9px 8px;
-    transition:transform .1s ease,border-color .15s ease,background .15s ease;width:100%}
+  .task{display:flex;align-items:flex-start;gap:8px;background:var(--panel);border:1px solid var(--line-soft);border-radius:11px;padding:9px 6px 9px 8px;transition:transform .1s ease,border-color .15s ease,background .15s ease;width:100%}
   .task:active{transform:scale(.985)}
-  .pri{width:20px;height:20px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;
-    justify-content:center;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:11px;
-    color:#0b0c10;margin-top:1px}
-  .pri.l1{background:var(--p1)} .pri.l2{background:var(--p2)}
-  .pri.l3{background:var(--p3)} .pri.l4{background:var(--p4);color:#dfe2e8}
+  .pri{width:20px;height:20px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:11px;color:#0b0c10;margin-top:1px}
+  .pri.l1{background:var(--p1)} .pri.l2{background:var(--p2)} .pri.l3{background:var(--p3)} .pri.l4{background:var(--p4);color:#dfe2e8}
   .body{flex:1;cursor:pointer;min-width:0}
   .ttext{font-size:12.5px;line-height:1.32;font-weight:500;word-break:break-word}
   .tmeta{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--muted-2);margin-top:3px;letter-spacing:.02em}
-  .tag{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.12em;
-    text-transform:uppercase;color:var(--brand);margin-top:3px}
-  .del{background:none;border:none;color:var(--muted-2);padding:2px 4px;cursor:pointer;
-    flex-shrink:0;opacity:.55;font-size:0;border-radius:6px}
-  .del svg{width:14px;height:14px}
-  .del:active{opacity:1;color:var(--p1)}
+  .tmeta .rem{color:var(--p2)}
+  .tag{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);margin-top:3px}
+  .del{background:none;border:none;color:var(--muted-2);padding:2px 4px;cursor:pointer;flex-shrink:0;opacity:.55;font-size:0;border-radius:6px}
+  .del svg{width:14px;height:14px} .del:active{opacity:1;color:var(--p1)}
   .task.done{opacity:.4}
   .task.done .ttext{text-decoration:line-through;text-decoration-color:var(--muted-2)}
   .task.done .pri{background:var(--brand)!important;color:#0b0c10}
-  .ritual{background:linear-gradient(180deg,rgba(47,181,116,.12),rgba(47,181,116,.04));
-    border:1px dashed var(--brand-dim)}
+  .ritual{background:linear-gradient(180deg,rgba(47,181,116,.12),rgba(47,181,116,.04));border:1px dashed var(--brand-dim)}
   .ritual .ttext{color:#bfe6d4;font-weight:600}
 
-  /* footer actions */
-  .foot{display:flex;justify-content:center;padding:8px;padding-bottom:calc(8px + var(--safe-bot));
-    border-top:1px solid var(--line-soft);flex-shrink:0}
-  .clear{background:none;border:none;color:var(--muted-2);font-family:'IBM Plex Mono',monospace;
-    font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:6px 12px}
+  .foot{display:flex;justify-content:center;padding:8px;padding-bottom:calc(8px + var(--safe-bot));border-top:1px solid var(--line-soft);flex-shrink:0}
+  .clear{background:none;border:none;color:var(--muted-2);font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:6px 12px}
   .clear:active{color:var(--text)}
 
-  /* FAB */
-  .fab{position:fixed;right:18px;bottom:calc(48px + var(--safe-bot));width:56px;height:56px;
-    border-radius:50%;background:var(--brand);border:none;color:#062015;font-size:28px;cursor:pointer;
-    z-index:20;box-shadow:0 10px 24px -6px rgba(47,181,116,.55);display:flex;align-items:center;justify-content:center}
+  .fab{position:fixed;right:18px;bottom:calc(48px + var(--safe-bot));width:56px;height:56px;border-radius:50%;background:var(--brand);border:none;color:#062015;font-size:28px;cursor:pointer;z-index:20;box-shadow:0 10px 24px -6px rgba(47,181,116,.55);display:flex;align-items:center;justify-content:center}
   .fab:active{transform:scale(.94)}
 
-  /* sheet */
-  .scrim{position:fixed;inset:0;background:rgba(6,7,10,.6);opacity:0;pointer-events:none;
-    transition:opacity .22s ease;z-index:25}
+  .scrim{position:fixed;inset:0;background:rgba(6,7,10,.6);opacity:0;pointer-events:none;transition:opacity .22s ease;z-index:25}
   .scrim.open{opacity:1;pointer-events:auto}
-  .sheet{position:fixed;left:0;right:0;bottom:0;background:var(--panel);
-    border-radius:22px 22px 0 0;padding:18px 18px calc(26px + var(--safe-bot));z-index:30;
-    transform:translateY(110%);transition:transform .28s cubic-bezier(.2,.8,.2,1);
-    border-top:1px solid var(--line)}
+  .sheet{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-radius:22px 22px 0 0;padding:18px 18px calc(26px + var(--safe-bot));z-index:30;transform:translateY(110%);transition:transform .28s cubic-bezier(.2,.8,.2,1);border-top:1px solid var(--line)}
   .sheet.open{transform:translateY(0)}
   .sheet h3{font-family:'Archivo',sans-serif;font-size:17px;font-weight:700;margin-bottom:14px}
-  .sheet input{width:100%;background:var(--base);border:1px solid var(--line);border-radius:11px;
-    padding:12px;color:var(--text);font-family:inherit;font-size:15px;margin-bottom:14px}
+  .sheet input[type=text]{width:100%;background:var(--base);border:1px solid var(--line);border-radius:11px;padding:12px;color:var(--text);font-family:inherit;font-size:15px;margin-bottom:14px}
   .sheet input:focus{outline:none;border-color:var(--brand)}
-  .fld{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
-    color:var(--muted-2);margin-bottom:7px}
+  .fld{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-2);margin-bottom:7px}
   .chips{display:flex;gap:7px;margin-bottom:15px;flex-wrap:wrap}
-  .chip{border:1px solid var(--line);background:var(--base);color:var(--muted);border-radius:9px;
-    padding:9px 11px;font-family:inherit;font-size:12.5px;cursor:pointer;font-weight:500;
-    display:flex;align-items:center;gap:6px;transition:.14s}
+  .chip{border:1px solid var(--line);background:var(--base);color:var(--muted);border-radius:9px;padding:9px 11px;font-family:inherit;font-size:12.5px;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px;transition:.14s}
   .chip.sel{border-color:var(--brand);background:rgba(47,181,116,.12);color:var(--text)}
   .chip .pri{width:17px;height:17px;font-size:10px}
   .chip svg{width:14px;height:14px}
-  .add{width:100%;background:var(--brand);color:#062015;border:none;border-radius:12px;padding:14px;
-    font-family:'Archivo',sans-serif;font-weight:700;font-size:15px;cursor:pointer}
-  .add:active{transform:scale(.99)}
-  .add:disabled{opacity:.4}
+  .remind-row{display:flex;gap:8px;align-items:center;margin-bottom:16px}
+  .remind-row input[type=time]{flex:1;background:var(--base);border:1px solid var(--line);border-radius:11px;padding:11px 12px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:14px;color-scheme:dark}
+  .remind-row input[type=time]:focus{outline:none;border-color:var(--brand)}
+  .remind-row .chip{margin:0}
+  .add{width:100%;background:var(--brand);color:#062015;border:none;border-radius:12px;padding:14px;font-family:'Archivo',sans-serif;font-weight:700;font-size:15px;cursor:pointer}
+  .add:active{transform:scale(.99)} .add:disabled{opacity:.4}
+
+  /* settings */
+  .setrow{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:14px 0;border-top:1px solid var(--line-soft)}
+  .setrow:first-of-type{border-top:none}
+  .setrow .txt{flex:1}
+  .setrow .t1{font-size:14px;font-weight:600;margin-bottom:3px}
+  .setrow .t2{font-size:12px;color:var(--muted);line-height:1.4}
+  .toggle{width:48px;height:28px;border-radius:99px;background:var(--line);border:none;position:relative;cursor:pointer;flex-shrink:0;transition:background .18s;margin-top:2px}
+  .toggle.on{background:var(--brand)}
+  .toggle::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .18s}
+  .toggle.on::after{transform:translateX(20px)}
+  .setstat{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted-2);letter-spacing:.05em;padding-top:14px;border-top:1px solid var(--line-soft);margin-top:4px}
+
+  /* streak toast */
+  .toast{position:fixed;left:50%;top:34%;transform:translate(-50%,-50%) scale(.8);z-index:50;
+    background:linear-gradient(160deg,#1f2a24,#15201b);border:1px solid var(--brand-dim);border-radius:20px;
+    padding:22px 30px;text-align:center;opacity:0;pointer-events:none;box-shadow:0 20px 60px -20px rgba(0,0,0,.8)}
+  .toast.show{opacity:1;transform:translate(-50%,-50%) scale(1);transition:opacity .3s,transform .35s cubic-bezier(.2,1.3,.4,1)}
+  .toast .big{font-size:44px;line-height:1;margin-bottom:8px}
+  .toast .n{font-family:'Archivo',sans-serif;font-weight:800;font-size:26px;color:var(--brand)}
+  .toast .sub{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:6px}
 
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
@@ -149,15 +147,16 @@
 <body>
 <div class="app">
   <div class="head">
+    <div class="toprow">
+      <div class="date" id="date">—</div>
+      <div class="topright">
+        <button class="streak cold" id="streakChip" aria-label="Streak"><span class="fl">🔥</span><span id="streakNum">0</span></button>
+        <button class="gear" id="gearBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+      </div>
+    </div>
     <div class="row">
-      <div>
-        <div class="date" id="date">—</div>
-        <div class="brand">Execu<span class="r">list</span></div>
-      </div>
-      <div class="progress">
-        <div class="big"><span id="cleared">0</span><span class="sub">/<span id="total">0</span></span></div>
-        <div class="lbl">cleared</div>
-      </div>
+      <div class="brand">Execu<span class="r">list</span></div>
+      <div class="progress"><div class="big"><span id="cleared">0</span><span class="sub">/<span id="total">0</span></span></div><div class="lbl">cleared</div></div>
     </div>
     <div class="bar"><i id="barfill"></i></div>
   </div>
@@ -169,14 +168,17 @@
     <div class="k"><span class="sw" style="background:var(--p4);color:#dfe2e8">4</span>Horizon</div>
   </div>
 
-  <div class="grid" id="grid"></div>
+  <div class="nudge calm" id="nudge"><span class="dot"></span><span id="nudgeText">—</span></div>
 
+  <div class="grid" id="grid"></div>
   <div class="foot"><button class="clear" id="clearBtn">Clear cleared tasks</button></div>
 </div>
 
 <button class="fab" id="fab" aria-label="New task">+</button>
 
 <div class="scrim" id="scrim"></div>
+
+<!-- new task sheet -->
 <div class="sheet" id="sheet" role="dialog" aria-label="New task">
   <h3>New task</h3>
   <input id="tinput" type="text" placeholder="What needs doing?" autocomplete="off" enterkeyhint="done">
@@ -184,8 +186,29 @@
   <div class="chips" id="lanechips"></div>
   <div class="fld">Priority</div>
   <div class="chips pchips" id="prichips"></div>
+  <div class="fld">Remind me (optional)</div>
+  <div class="remind-row">
+    <input id="tremind" type="time">
+    <button class="chip" id="remindclear" type="button">Clear</button>
+  </div>
   <button class="add" id="addbtn" disabled>Add to Execulist</button>
 </div>
+
+<!-- settings sheet -->
+<div class="sheet" id="setsheet" role="dialog" aria-label="Settings">
+  <h3>Settings</h3>
+  <div class="setrow">
+    <div class="txt">
+      <div class="t1">Pressure mode</div>
+      <div class="t2">Nudge me harder to finish my #1s. Sharper reminders, and a daily streak nudge on your device.</div>
+    </div>
+    <button class="toggle" id="pressureToggle" aria-label="Toggle pressure mode"></button>
+  </div>
+  <div class="setstat" id="setstat">Streak: 0 days</div>
+</div>
+
+<!-- streak toast -->
+<div class="toast" id="toast"><div class="big">🔥</div><div class="n" id="toastN">1 day</div><div class="sub">streak</div></div>
 
 <script>
 const ICONS = {
@@ -195,11 +218,11 @@ const ICONS = {
   call:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.4c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z"/></svg>',
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>'
 };
-const QUADS = [{key:'do',name:'To Do'},{key:'see',name:'To See'},{key:'send',name:'To Send'},{key:'call',name:'To Call'}];
-const PRI_LABELS = {1:'Today',2:'Tomorrow',3:'Soon',4:'Horizon'};
-const STORE_KEY = 'execulist.tasks.v1';
-
-const SEED = [
+const QUADS=[{key:'do',name:'To Do'},{key:'see',name:'To See'},{key:'send',name:'To Send'},{key:'call',name:'To Call'}];
+const PRI_LABELS={1:'Today',2:'Tomorrow',3:'Soon',4:'Horizon'};
+const STORE_KEY='execulist.tasks.v1';
+const STATE_KEY='execulist.state.v1';
+const SEED=[
   {lane:'do',pri:1,text:'Make tomorrow’s list',ritual:true},
   {lane:'do',pri:3,text:'Renew DCQ credential',meta:'due Q3'},
   {lane:'see',pri:1,text:'Walkthrough — 4412 Oakwood',meta:'8:00 AM'},
@@ -207,43 +230,110 @@ const SEED = [
   {lane:'call',pri:1,text:'GAF rep — shingle backorder'}
 ];
 
-let TASKS = load();
-
-function load(){
-  try{
-    const raw = localStorage.getItem(STORE_KEY);
-    if(raw){ const p = JSON.parse(raw); if(Array.isArray(p)) return p; }
-  }catch(e){}
-  // first run: seed with a few starter tasks
-  const seeded = SEED.map((t,i)=>({id:'seed'+i, done:false, ...t}));
-  save(seeded); return seeded;
+/* ---------- native local notifications (Capacitor) ---------- */
+const Cap = window.Capacitor;
+const isNative = !!(Cap && Cap.isNativePlatform && Cap.isNativePlatform());
+function LN(){ return (Cap && Cap.Plugins && Cap.Plugins.LocalNotifications) || null; }
+const PRESSURE_NOTIF_ID = 770001;
+async function notifyPermission(){
+  if(!isNative || !LN()) return false;
+  try{ const r = await LN().requestPermissions(); return r && r.display === 'granted'; }catch(e){ return false; }
 }
-function save(list){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }catch(e){} }
-function persist(){ save(TASKS); }
+async function scheduleNotif(task){
+  if(!isNative || !LN() || !task.reminderAt || !task.notifId) return;
+  try{ await LN().schedule({ notifications:[{ id:task.notifId, title:'Execulist · '+laneName(task.lane), body:task.text, schedule:{ at:new Date(task.reminderAt) } }] }); }catch(e){}
+}
+async function cancelNotif(task){
+  if(!isNative || !LN() || !task.notifId) return;
+  try{ await LN().cancel({ notifications:[{ id:task.notifId }] }); }catch(e){}
+}
+async function schedulePressure(){
+  if(!isNative || !LN()) return;
+  try{ await LN().schedule({ notifications:[{ id:PRESSURE_NOTIF_ID, title:'Execulist', body:"Don't break your streak — finish your #1s. 🔥", schedule:{ on:{ hour:19, minute:0 }, repeats:true } }] }); }catch(e){}
+}
+async function cancelPressure(){
+  if(!isNative || !LN()) return;
+  try{ await LN().cancel({ notifications:[{ id:PRESSURE_NOTIF_ID }] }); }catch(e){}
+}
+function newNotifId(){ return Math.floor(Math.random()*2000000000)+1; }
+function laneName(k){ const q=QUADS.find(x=>x.key===k); return q?q.name:''; }
+
+/* ---------- data + state ---------- */
+let TASKS = loadTasks();
+let state = loadState();
+function loadTasks(){
+  try{ const raw=localStorage.getItem(STORE_KEY); if(raw){ const p=JSON.parse(raw); if(Array.isArray(p)) return p; } }catch(e){}
+  const seeded=SEED.map((t,i)=>({id:'seed'+i,done:false,...t})); saveTasks(seeded); return seeded;
+}
+function saveTasks(list){ try{ localStorage.setItem(STORE_KEY,JSON.stringify(list)); }catch(e){} }
+function persist(){ saveTasks(TASKS); }
+function loadState(){
+  try{ const raw=localStorage.getItem(STATE_KEY); if(raw){ const s=JSON.parse(raw); if(s&&typeof s==='object') return Object.assign({streak:0,lastGoalDay:null,lastOpenDay:null,pressure:false}, s); } }catch(e){}
+  return {streak:0,lastGoalDay:null,lastOpenDay:null,pressure:false};
+}
+function saveState(){ try{ localStorage.setItem(STATE_KEY,JSON.stringify(state)); }catch(e){} }
 function uid(){ return 't'+Date.now()+Math.random().toString(36).slice(2,7); }
 
-const grid = document.getElementById('grid');
+/* ---------- day / streak helpers ---------- */
+function dayKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function yesterdayKey(){ const d=new Date(); d.setDate(d.getDate()-1); return dayKey(d); }
+function onesAllDone(){ const ones=TASKS.filter(t=>t.pri===1); return ones.length>0 && ones.every(t=>t.done); }
+function openOnes(){ return TASKS.filter(t=>t.pri===1 && !t.done).length; }
+
+function rolloverIfNewDay(){
+  const today=dayKey(new Date());
+  if(state.lastOpenDay!==today){
+    // if the streak chain didn't reach yesterday, it's broken
+    if(state.lastGoalDay!==today && state.lastGoalDay!==yesterdayKey()){
+      state.streak=0;
+    }
+    // new day: the standing ritual must be done again
+    let changed=false;
+    TASKS.forEach(t=>{ if(t.ritual && t.done){ t.done=false; changed=true; } });
+    if(changed) persist();
+    state.lastOpenDay=today; saveState();
+  }
+}
+function checkGoal(){
+  if(!onesAllDone()) return;
+  const today=dayKey(new Date());
+  if(state.lastGoalDay===today) return; // already counted today
+  state.streak = (state.lastGoalDay===yesterdayKey()) ? state.streak+1 : 1;
+  state.lastGoalDay=today; saveState();
+  celebrate(state.streak);
+}
+
+/* ---------- render ---------- */
+const grid=document.getElementById('grid');
 function render(){
   grid.innerHTML='';
   QUADS.forEach(q=>{
-    const items = TASKS.filter(t=>t.lane===q.key).sort((a,b)=>a.pri-b.pri);
-    const open = items.filter(t=>!t.done).length;
+    const items=TASKS.filter(t=>t.lane===q.key).sort((a,b)=>a.pri-b.pri);
+    const open=items.filter(t=>!t.done).length;
     const quad=document.createElement('div'); quad.className='quad';
-    quad.innerHTML=`<div class="qhead"><div class="qicon">${ICONS[q.key]}</div>
-      <div class="qname">${q.name}</div><div class="qcount">${open}</div></div><div class="qlist"></div>`;
+    quad.innerHTML=`<div class="qhead"><div class="qicon">${ICONS[q.key]}</div><div class="qname">${q.name}</div><div class="qcount">${open}</div></div><div class="qlist"></div>`;
     const list=quad.querySelector('.qlist');
     if(!items.length){ const e=document.createElement('div'); e.className='empty'; e.textContent='—'; list.appendChild(e); }
     items.forEach(t=>{
       const row=document.createElement('div');
       row.className='task'+(t.done?' done':'')+(t.ritual?' ritual':'');
-      const meta = t.ritual?`<div class="tag">Every day · standing #1</div>`:(t.meta?`<div class="tmeta">${esc(t.meta)}</div>`:'');
-      row.innerHTML=`<span class="pri l${t.pri}">${t.pri}</span>
-        <div class="body"><div class="ttext">${esc(t.text)}</div>${meta}</div>
-        <button class="del" aria-label="Delete">${ICONS.trash}</button>`;
-      row.querySelector('.body').addEventListener('click',()=>{ t.done=!t.done; persist(); render(); });
+      let meta='';
+      if(t.ritual){ meta=`<div class="tag">Every day · standing #1</div>`; }
+      else{
+        const bits=[];
+        if(t.meta) bits.push(esc(t.meta));
+        if(t.reminderAt) bits.push(`<span class="rem">⏰ ${fmtTime(t.reminderAt)}</span>`);
+        if(bits.length) meta=`<div class="tmeta">${bits.join('  ·  ')}</div>`;
+      }
+      row.innerHTML=`<span class="pri l${t.pri}">${t.pri}</span><div class="body"><div class="ttext">${esc(t.text)}</div>${meta}</div><button class="del" aria-label="Delete">${ICONS.trash}</button>`;
+      row.querySelector('.body').addEventListener('click',()=>{
+        t.done=!t.done;
+        if(t.done) cancelNotif(t); else if(t.reminderAt && t.reminderAt>Date.now()) scheduleNotif(t);
+        persist(); checkGoal(); render();
+      });
       row.querySelector('.del').addEventListener('click',(ev)=>{
         ev.stopPropagation();
-        if(confirm('Delete this task?')){ TASKS=TASKS.filter(x=>x.id!==t.id); persist(); render(); }
+        if(confirm('Delete this task?')){ cancelNotif(t); TASKS=TASKS.filter(x=>x.id!==t.id); persist(); checkGoal(); render(); }
       });
       list.appendChild(row);
     });
@@ -253,59 +343,138 @@ function render(){
   document.getElementById('cleared').textContent=done;
   document.getElementById('total').textContent=total;
   document.getElementById('barfill').style.width=(total?done/total*100:0)+'%';
+  renderStreak();
+  renderNudge();
 }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function fmtTime(ts){ try{ return new Date(ts).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
 
-// date
-(function(){
-  const d=new Date();
-  const opt={weekday:'short',month:'short',day:'numeric'};
-  document.getElementById('date').textContent=d.toLocaleDateString(undefined,opt).replace(',',' ·').toUpperCase();
-})();
+function renderStreak(){
+  document.getElementById('streakNum').textContent=state.streak;
+  const chip=document.getElementById('streakChip');
+  chip.classList.toggle('hot', state.streak>0);
+  chip.classList.toggle('cold', state.streak===0);
+}
+function computeNudge(){
+  const ones=TASKS.filter(t=>t.pri===1);
+  const open=ones.filter(t=>!t.done).length;
+  const late=new Date().getHours()>=18;
+  const s=state.streak;
+  if(ones.length && open===0){
+    return {text: s>0 ? `All ones cleared. Streak safe at ${s}. 🔥` : `All ones cleared. Nice.`, tone:'win'};
+  }
+  const plural = open>1?'s':'';
+  if(!state.pressure){
+    return {text:`${open} must-do${plural} left today.`, tone: late?'warn':'calm'};
+  }
+  if(s>0){
+    if(late) return {text:`🔥 ${s}-day streak dies at midnight — ${open} one${plural} left. Move.`, tone:'danger'};
+    return {text:`${open} one${plural} between you and your ${s}-day streak. No excuses.`, tone:'warn'};
+  }
+  if(late) return {text:`${open} one${plural} left and the day's almost gone. Finish them.`, tone:'danger'};
+  return {text:`${open} one${plural} to clear. Stop stalling.`, tone:'warn'};
+}
+function renderNudge(){
+  const n=computeNudge();
+  const el=document.getElementById('nudge');
+  el.className='nudge '+n.tone;
+  document.getElementById('nudgeText').textContent=n.text;
+}
 
-// clear done
+/* streak celebration */
+let toastTimer=null;
+function celebrate(n){
+  const t=document.getElementById('toast');
+  document.getElementById('toastN').textContent = n+(n===1?' day':' days');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'), 1900);
+}
+
+/* date */
+(function(){ const d=new Date(); const opt={weekday:'short',month:'short',day:'numeric'};
+  document.getElementById('date').textContent=d.toLocaleDateString(undefined,opt).replace(',',' ·').toUpperCase(); })();
+
+/* clear done */
 document.getElementById('clearBtn').addEventListener('click',()=>{
-  const n=TASKS.filter(t=>t.done).length;
-  if(!n) return;
-  if(confirm('Remove '+n+' cleared task'+(n>1?'s':'')+'?')){ TASKS=TASKS.filter(t=>!t.done); persist(); render(); }
+  const doneOnes=TASKS.filter(t=>t.done); if(!doneOnes.length) return;
+  if(confirm('Remove '+doneOnes.length+' cleared task'+(doneOnes.length>1?'s':'')+'?')){
+    doneOnes.forEach(cancelNotif); TASKS=TASKS.filter(t=>!t.done); persist(); render();
+  }
 });
 
-// new-task sheet
-const scrim=document.getElementById('scrim'), sheet=document.getElementById('sheet');
-const fab=document.getElementById('fab'), addbtn=document.getElementById('addbtn'), tinput=document.getElementById('tinput');
+/* ---------- new-task sheet ---------- */
+const scrim=document.getElementById('scrim');
+const sheet=document.getElementById('sheet'), setsheet=document.getElementById('setsheet');
+const fab=document.getElementById('fab'), addbtn=document.getElementById('addbtn'), tinput=document.getElementById('tinput'), tremind=document.getElementById('tremind');
 let selLane=null, selPri=null;
 const laneWrap=document.getElementById('lanechips');
 QUADS.forEach(q=>{
-  const c=document.createElement('button'); c.className='chip';
+  const c=document.createElement('button'); c.className='chip'; c.type='button';
   c.innerHTML=`${ICONS[q.key]}<span>${q.name}</span>`;
   c.addEventListener('click',()=>{selLane=q.key;[...laneWrap.children].forEach(x=>x.classList.remove('sel'));c.classList.add('sel');ready();});
   laneWrap.appendChild(c);
 });
 const priWrap=document.getElementById('prichips');
 [1,2,3,4].forEach(p=>{
-  const c=document.createElement('button'); c.className='chip';
+  const c=document.createElement('button'); c.className='chip'; c.type='button';
   c.innerHTML=`<span class="pri l${p}">${p}</span><span>${PRI_LABELS[p]}</span>`;
   c.addEventListener('click',()=>{selPri=p;[...priWrap.children].forEach(x=>x.classList.remove('sel'));c.classList.add('sel');ready();});
   priWrap.appendChild(c);
 });
+document.getElementById('remindclear').addEventListener('click',()=>{ tremind.value=''; });
 function ready(){ addbtn.disabled=!(selLane&&selPri&&tinput.value.trim()); }
 tinput.addEventListener('input',ready);
-function open(){ scrim.classList.add('open'); sheet.classList.add('open'); setTimeout(()=>tinput.focus(),220); }
-function close(){ scrim.classList.remove('open'); sheet.classList.remove('open');
-  selLane=selPri=null; tinput.value=''; [...laneWrap.children,...priWrap.children].forEach(x=>x.classList.remove('sel')); ready(); }
-fab.addEventListener('click',open);
-scrim.addEventListener('click',close);
-function submit(){ if(addbtn.disabled) return;
-  TASKS.push({id:uid(),lane:selLane,pri:selPri,text:tinput.value.trim(),done:false}); persist(); close(); render(); }
+
+function openScrim(){ scrim.classList.add('open'); }
+function closeAll(){
+  scrim.classList.remove('open');
+  sheet.classList.remove('open'); setsheet.classList.remove('open');
+  selLane=selPri=null; tinput.value=''; tremind.value=''; [...laneWrap.children,...priWrap.children].forEach(x=>x.classList.remove('sel')); ready();
+}
+fab.addEventListener('click',()=>{ openScrim(); sheet.classList.add('open'); setTimeout(()=>tinput.focus(),220); });
+scrim.addEventListener('click',closeAll);
+
+async function submit(){
+  if(addbtn.disabled) return;
+  const task={id:uid(),lane:selLane,pri:selPri,text:tinput.value.trim(),done:false};
+  const rAt=reminderTs(tremind.value);
+  if(rAt){ task.reminderAt=rAt; task.notifId=newNotifId(); }
+  TASKS.push(task); persist(); closeAll(); render();
+  if(rAt){ const ok=await notifyPermission(); if(ok) scheduleNotif(task); }
+}
+function reminderTs(timeStr){
+  if(!timeStr) return null;
+  const p=timeStr.split(':'); const h=+p[0], m=+p[1];
+  if(isNaN(h)||isNaN(m)) return null;
+  const d=new Date(); d.setHours(h,m,0,0);
+  if(d.getTime()<=Date.now()) d.setDate(d.getDate()+1);
+  return d.getTime();
+}
 addbtn.addEventListener('click',submit);
 tinput.addEventListener('keydown',e=>{ if(e.key==='Enter') submit(); });
 
-render();
-
-// register service worker (relative path works on GitHub Pages subpaths)
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+/* ---------- settings sheet ---------- */
+const gearBtn=document.getElementById('gearBtn'), pressureToggle=document.getElementById('pressureToggle'), setstat=document.getElementById('setstat');
+function openSettings(){
+  openScrim(); setsheet.classList.add('open');
+  pressureToggle.classList.toggle('on', !!state.pressure);
+  setstat.textContent='Streak: '+state.streak+(state.streak===1?' day':' days');
 }
+gearBtn.addEventListener('click',openSettings);
+pressureToggle.addEventListener('click',async ()=>{
+  state.pressure=!state.pressure; saveState();
+  pressureToggle.classList.toggle('on', state.pressure);
+  renderNudge();
+  if(state.pressure){ const ok=await notifyPermission(); if(ok) schedulePressure(); }
+  else cancelPressure();
+});
+document.getElementById('streakChip').addEventListener('click',openSettings);
+
+/* ---------- boot ---------- */
+rolloverIfNewDay();
+render();
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
 </script>
 </body>
 </html>
