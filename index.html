@@ -87,8 +87,6 @@
   .tag{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);margin-top:3px}
   .del{background:none;border:none;color:var(--muted-2);padding:2px 4px;cursor:pointer;flex-shrink:0;opacity:.55;font-size:0;border-radius:6px}
   .del svg{width:14px;height:14px} .del:active{opacity:1;color:var(--p1)}
-  .act{background:none;border:none;color:var(--brand);padding:2px 4px;cursor:pointer;flex-shrink:0;border-radius:6px;display:flex;align-items:center}
-  .act svg{width:16px;height:16px} .act:active{opacity:.6}
   .task.done{opacity:.4}
   .task.done .ttext{text-decoration:line-through;text-decoration-color:var(--muted-2)}
   .task.done .pri{background:var(--brand)!important;color:#0b0c10}
@@ -186,10 +184,6 @@
   <input id="tinput" type="text" placeholder="What needs doing?" autocomplete="off" enterkeyhint="done">
   <div class="fld">Which lane</div>
   <div class="chips" id="lanechips"></div>
-  <div id="detailWrap" style="display:none">
-    <div class="fld" id="detailLabel">Detail</div>
-    <input id="tdetail" type="text" autocomplete="off">
-  </div>
   <div class="fld">Priority</div>
   <div class="chips pchips" id="prichips"></div>
   <div class="fld">Remind me (optional)</div>
@@ -231,9 +225,9 @@ const STATE_KEY='execulist.state.v1';
 const SEED=[
   {lane:'do',pri:1,text:'Make tomorrow’s list',ritual:true},
   {lane:'do',pri:3,text:'Renew DCQ credential',meta:'due Q3'},
-  {lane:'see',pri:1,text:'Walkthrough — 4412 Oakwood',meta:'8:00 AM',detail:'4412 Oakwood Ave, Milwaukee, WI'},
-  {lane:'send',pri:1,text:'Estimate → Henderson reroof',detail:'henderson@example.com'},
-  {lane:'call',pri:1,text:'GAF rep — shingle backorder',detail:'414-555-0142'}
+  {lane:'see',pri:1,text:'Walkthrough — 4412 Oakwood',meta:'8:00 AM'},
+  {lane:'send',pri:1,text:'Estimate → Henderson reroof'},
+  {lane:'call',pri:1,text:'GAF rep — shingle backorder'}
 ];
 
 /* ---------- native local notifications (Capacitor) ---------- */
@@ -328,19 +322,15 @@ function render(){
       else{
         const bits=[];
         if(t.meta) bits.push(esc(t.meta));
-        if(t.detail) bits.push(esc(t.detail));
         if(t.reminderAt) bits.push(`<span class="rem">⏰ ${fmtTime(t.reminderAt)}</span>`);
         if(bits.length) meta=`<div class="tmeta">${bits.join('  ·  ')}</div>`;
       }
-      const canAct = t.detail && (t.lane==='see'||t.lane==='call'||t.lane==='send');
-      const actBtn = canAct ? `<button class="act" aria-label="Open">${ICONS[t.lane]}</button>` : '';
-      row.innerHTML=`<span class="pri l${t.pri}">${t.pri}</span><div class="body"><div class="ttext">${esc(t.text)}</div>${meta}</div>${actBtn}<button class="del" aria-label="Delete">${ICONS.trash}</button>`;
+      row.innerHTML=`<span class="pri l${t.pri}">${t.pri}</span><div class="body"><div class="ttext">${esc(t.text)}</div>${meta}</div><button class="del" aria-label="Delete">${ICONS.trash}</button>`;
       row.querySelector('.body').addEventListener('click',()=>{
         t.done=!t.done;
         if(t.done) cancelNotif(t); else if(t.reminderAt && t.reminderAt>Date.now()) scheduleNotif(t);
         persist(); checkGoal(); render();
       });
-      const ab=row.querySelector('.act'); if(ab) ab.addEventListener('click',(ev)=>{ ev.stopPropagation(); actOn(t); });
       row.querySelector('.del').addEventListener('click',(ev)=>{
         ev.stopPropagation();
         if(confirm('Delete this task?')){ cancelNotif(t); TASKS=TASKS.filter(x=>x.id!==t.id); persist(); checkGoal(); render(); }
@@ -416,14 +406,13 @@ document.getElementById('clearBtn').addEventListener('click',()=>{
 /* ---------- new-task sheet ---------- */
 const scrim=document.getElementById('scrim');
 const sheet=document.getElementById('sheet'), setsheet=document.getElementById('setsheet');
-const fab=document.getElementById('fab'), addbtn=document.getElementById('addbtn'), tinput=document.getElementById('tinput'), tremind=document.getElementById('tremind'), tdetail=document.getElementById('tdetail');
-const detailWrap=document.getElementById('detailWrap'), detailLabel=document.getElementById('detailLabel');
+const fab=document.getElementById('fab'), addbtn=document.getElementById('addbtn'), tinput=document.getElementById('tinput'), tremind=document.getElementById('tremind');
 let selLane=null, selPri=null;
 const laneWrap=document.getElementById('lanechips');
 QUADS.forEach(q=>{
   const c=document.createElement('button'); c.className='chip'; c.type='button';
   c.innerHTML=`${ICONS[q.key]}<span>${q.name}</span>`;
-  c.addEventListener('click',()=>{selLane=q.key;[...laneWrap.children].forEach(x=>x.classList.remove('sel'));c.classList.add('sel');updateDetailField(q.key);ready();});
+  c.addEventListener('click',()=>{selLane=q.key;[...laneWrap.children].forEach(x=>x.classList.remove('sel'));c.classList.add('sel');ready();});
   laneWrap.appendChild(c);
 });
 const priWrap=document.getElementById('prichips');
@@ -441,7 +430,7 @@ function openScrim(){ scrim.classList.add('open'); }
 function closeAll(){
   scrim.classList.remove('open');
   sheet.classList.remove('open'); setsheet.classList.remove('open');
-  selLane=selPri=null; tinput.value=''; tremind.value=''; tdetail.value=''; detailWrap.style.display='none'; [...laneWrap.children,...priWrap.children].forEach(x=>x.classList.remove('sel')); ready();
+  selLane=selPri=null; tinput.value=''; tremind.value=''; [...laneWrap.children,...priWrap.children].forEach(x=>x.classList.remove('sel')); ready();
 }
 fab.addEventListener('click',()=>{ openScrim(); sheet.classList.add('open'); setTimeout(()=>tinput.focus(),220); });
 scrim.addEventListener('click',closeAll);
@@ -449,8 +438,6 @@ scrim.addEventListener('click',closeAll);
 async function submit(){
   if(addbtn.disabled) return;
   const task={id:uid(),lane:selLane,pri:selPri,text:tinput.value.trim(),done:false};
-  const det=(DETAIL_CFG[selLane] && tdetail.value.trim()) ? tdetail.value.trim() : '';
-  if(det) task.detail=det;
   const rAt=reminderTs(tremind.value);
   if(rAt){ task.reminderAt=rAt; task.notifId=newNotifId(); }
   TASKS.push(task); persist(); closeAll(); render();
@@ -466,30 +453,6 @@ function reminderTs(timeStr){
 }
 addbtn.addEventListener('click',submit);
 tinput.addEventListener('keydown',e=>{ if(e.key==='Enter') submit(); });
-
-/* contextual detail field + tap-to-act */
-const DETAIL_CFG={
-  see:{label:'Address (opens Maps)', ph:'e.g. 4412 Oakwood Ave, Milwaukee', mode:'text'},
-  call:{label:'Phone (opens dialer)', ph:'e.g. 414-555-0142', mode:'tel'},
-  send:{label:'Email (opens mail)', ph:'e.g. name@example.com', mode:'email'}
-};
-function updateDetailField(lane){
-  const cfg=DETAIL_CFG[lane];
-  if(!cfg){ detailWrap.style.display='none'; tdetail.value=''; return; }
-  detailLabel.textContent=cfg.label;
-  tdetail.placeholder=cfg.ph;
-  tdetail.setAttribute('inputmode', cfg.mode==='tel'?'tel':(cfg.mode==='email'?'email':'text'));
-  detailWrap.style.display='block';
-}
-function actOn(task){
-  const d=(task.detail||'').trim(); if(!d) return;
-  if(task.lane==='call'){ window.location.href='tel:'+d.replace(/[^+\d]/g,''); }
-  else if(task.lane==='send'){ window.location.href='mailto:'+d; }
-  else if(task.lane==='see'){
-    const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(d);
-    const w=window.open(url,'_system'); if(!w) window.open(url,'_blank');
-  }
-}
 
 /* ---------- settings sheet ---------- */
 const gearBtn=document.getElementById('gearBtn'), pressureToggle=document.getElementById('pressureToggle'), setstat=document.getElementById('setstat');
