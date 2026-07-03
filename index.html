@@ -178,6 +178,31 @@
   .tv-pri .pri{width:26px;height:26px;font-size:13px}
   .tv-flame{font-size:96px;line-height:1;filter:drop-shadow(0 6px 24px rgba(47,181,116,.4))}
 
+  .del-task{width:100%;background:none;border:none;color:var(--p1);font-family:'IBM Plex Mono',monospace;
+    font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:14px 0 2px;opacity:.75}
+  .del-task:active{opacity:1}
+
+  /* shareable streak card */
+  .share{position:fixed;inset:0;z-index:60;background:
+      radial-gradient(900px 500px at 50% -5%, #1c2530 0%, transparent 60%), var(--ink);
+    display:flex;flex-direction:column;align-items:center;
+    padding:calc(20px + var(--safe-top)) 22px calc(24px + var(--safe-bot));
+    opacity:0;pointer-events:none;transition:opacity .25s}
+  .share.open{opacity:1;pointer-events:auto}
+  .share .tut-skip{align-self:flex-end}
+  .share-card{width:100%;max-width:330px;margin:auto;aspect-ratio:1/1;border-radius:28px;
+    background:linear-gradient(158deg,#17211c 0%,#0f1317 100%);border:1px solid var(--brand-dim);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;overflow:hidden}
+  .share-card::before{content:'';position:absolute;top:-40%;left:-10%;width:120%;height:80%;
+    background:radial-gradient(closest-side,rgba(47,181,116,.16),transparent);pointer-events:none}
+  .sc-date{position:absolute;top:22px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--muted-2);text-transform:uppercase}
+  .sc-flame{font-size:76px;line-height:1;filter:drop-shadow(0 8px 26px rgba(47,181,116,.45))}
+  .sc-num{font-family:'Archivo',sans-serif;font-weight:800;font-size:82px;line-height:.9;color:var(--brand)}
+  .sc-lbl{font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.32em;color:var(--text);text-transform:uppercase;padding-left:.32em}
+  .sc-stat{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-top:10px;letter-spacing:.05em}
+  .sc-brand{position:absolute;bottom:22px;font-family:'Archivo',sans-serif;font-weight:800;font-size:16px;letter-spacing:-.01em;color:var(--text)}
+  .sc-brand span{color:var(--brand)}
+
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -233,6 +258,7 @@
     <button class="chip" id="remindclear" type="button">Clear</button>
   </div>
   <button class="add" id="addbtn" disabled>Add to Execulist</button>
+  <button class="del-task" id="editDelete" type="button" style="display:none">Delete task</button>
 </div>
 
 <!-- settings sheet -->
@@ -271,6 +297,20 @@
     <button class="tut-back" id="tutBack">Back</button>
     <button class="tut-next" id="tutNext">Next</button>
   </div>
+</div>
+
+<!-- shareable streak card -->
+<div class="share" id="share">
+  <button class="tut-skip" id="shareClose">Close</button>
+  <div class="share-card" id="shareCard">
+    <div class="sc-date" id="scDate"></div>
+    <div class="sc-flame">🔥</div>
+    <div class="sc-num" id="scNum">0</div>
+    <div class="sc-lbl">Day Streak</div>
+    <div class="sc-stat" id="scStat">0 of 0 cleared today</div>
+    <div class="sc-brand">Execu<span>list</span></div>
+  </div>
+  <button class="tut-next" id="shareBtn" style="max-width:340px;width:100%">Share my streak</button>
 </div>
 
 <script>
@@ -350,10 +390,20 @@ function rolloverIfNewDay(){
     if(state.lastGoalDay!==today && state.lastGoalDay!==yesterdayKey()){
       state.streak=0;
     }
-    // new day: the standing ritual must be done again
-    let changed=false;
-    TASKS.forEach(t=>{ if(t.ritual && t.done){ t.done=false; changed=true; } });
-    if(changed) persist();
+    // roll forward: clear finished tasks, carry & age the unfinished ones
+    if(state.lastOpenDay){ // skip on very first run
+      const kept=[];
+      TASKS.forEach(t=>{
+        if(t.ritual){ t.done=false; kept.push(t); return; } // ritual resets, always stays
+        if(t.done){ cancelNotif(t); return; }               // finished -> cleared for the new day
+        if(t.pri===2) t.pri=1;                              // "tomorrow" is now "today"
+        kept.push(t);
+      });
+      TASKS=kept;
+    } else {
+      TASKS.forEach(t=>{ if(t.ritual) t.done=false; });
+    }
+    persist();
     state.lastOpenDay=today; saveState();
   }
 }
@@ -393,10 +443,12 @@ function render(){
       const actBtn = canAct ? `<button class="act" aria-label="Open">${ICONS[t.lane]}</button>` : '';
       row.innerHTML=`<span class="pri l${t.pri}">${t.pri}</span><div class="body"><div class="ttext">${esc(t.text)}</div>${meta}</div>${actBtn}<button class="del" aria-label="Delete">${ICONS.trash}</button>`;
       row.querySelector('.body').addEventListener('click',()=>{
+        if(row._lp){ row._lp=false; return; } // long-press fired; ignore this tap
         t.done=!t.done;
         if(t.done) cancelNotif(t); else if(t.reminderAt && t.reminderAt>Date.now()) scheduleNotif(t);
         persist(); checkGoal(); render();
       });
+      if(!t.ritual) attachLongPress(row, ()=>openTaskSheet(t));
       const ab=row.querySelector('.act'); if(ab) ab.addEventListener('click',(ev)=>{ ev.stopPropagation(); actOn(t); });
       row.querySelector('.del').addEventListener('click',(ev)=>{
         ev.stopPropagation();
@@ -475,7 +527,20 @@ const scrim=document.getElementById('scrim');
 const sheet=document.getElementById('sheet'), setsheet=document.getElementById('setsheet');
 const fab=document.getElementById('fab'), addbtn=document.getElementById('addbtn'), tinput=document.getElementById('tinput'), tremind=document.getElementById('tremind'), tdetail=document.getElementById('tdetail');
 const detailWrap=document.getElementById('detailWrap'), detailLabel=document.getElementById('detailLabel');
-let selLane=null, selPri=null;
+let selLane=null, selPri=null, editingId=null;
+const editDeleteBtn=document.getElementById('editDelete');
+function attachLongPress(row, onLong){
+  let timer=null;
+  const start=()=>{ timer=setTimeout(()=>{ timer=null; row._lp=true; onLong(); }, 450); };
+  const cancel=()=>{ if(timer){ clearTimeout(timer); timer=null; } };
+  row.addEventListener('touchstart',start,{passive:true});
+  row.addEventListener('touchmove',cancel,{passive:true});
+  row.addEventListener('touchend',cancel);
+  row.addEventListener('mousedown',start);
+  row.addEventListener('mousemove',cancel);
+  row.addEventListener('mouseup',cancel);
+  row.addEventListener('mouseleave',cancel);
+}
 const laneWrap=document.getElementById('lanechips');
 QUADS.forEach(q=>{
   const c=document.createElement('button'); c.className='chip'; c.type='button';
@@ -498,20 +563,70 @@ function openScrim(){ scrim.classList.add('open'); }
 function closeAll(){
   scrim.classList.remove('open');
   sheet.classList.remove('open'); setsheet.classList.remove('open');
+  const sh=document.getElementById('share'); if(sh) sh.classList.remove('open');
+  editingId=null;
   selLane=selPri=null; tinput.value=''; tremind.value=''; tdetail.value=''; detailWrap.style.display='none'; [...laneWrap.children,...priWrap.children].forEach(x=>x.classList.remove('sel')); ready();
 }
-fab.addEventListener('click',()=>{ openScrim(); sheet.classList.add('open'); setTimeout(()=>tinput.focus(),220); });
+function selectLaneChip(lane){
+  [...laneWrap.children].forEach(x=>x.classList.remove('sel'));
+  const idx=QUADS.findIndex(q=>q.key===lane);
+  if(idx>=0){ laneWrap.children[idx].classList.add('sel'); selLane=lane; updateDetailField(lane); }
+}
+function selectPriChip(p){
+  [...priWrap.children].forEach(x=>x.classList.remove('sel'));
+  if(p>=1&&p<=4){ priWrap.children[p-1].classList.add('sel'); selPri=p; }
+}
+function hhmm(ts){ const d=new Date(ts); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function openTaskSheet(task){
+  editingId = task ? task.id : null;
+  document.querySelector('#sheet h3').textContent = task ? 'Edit task' : 'New task';
+  addbtn.textContent = task ? 'Save changes' : 'Add to Execulist';
+  editDeleteBtn.style.display = task ? 'block' : 'none';
+  selLane=selPri=null; tinput.value=''; tremind.value=''; tdetail.value=''; detailWrap.style.display='none';
+  [...laneWrap.children,...priWrap.children].forEach(x=>x.classList.remove('sel'));
+  if(task){
+    tinput.value=task.text||'';
+    selectLaneChip(task.lane);
+    selectPriChip(task.pri);
+    if(task.detail){ tdetail.value=task.detail; }
+    if(task.reminderAt){ tremind.value=hhmm(task.reminderAt); }
+  }
+  ready();
+  openScrim(); sheet.classList.add('open');
+  if(!task) setTimeout(()=>tinput.focus(),220);
+}
+fab.addEventListener('click',()=>openTaskSheet(null));
 scrim.addEventListener('click',closeAll);
+editDeleteBtn.addEventListener('click',()=>{
+  if(!editingId) return;
+  if(confirm('Delete this task?')){
+    const task=TASKS.find(t=>t.id===editingId); if(task) cancelNotif(task);
+    TASKS=TASKS.filter(t=>t.id!==editingId); closeAll(); checkGoal(); render();
+  }
+});
 
 async function submit(){
   if(addbtn.disabled) return;
-  const task={id:uid(),lane:selLane,pri:selPri,text:tinput.value.trim(),done:false};
   const det=(DETAIL_CFG[selLane] && tdetail.value.trim()) ? tdetail.value.trim() : '';
-  if(det) task.detail=det;
   const rAt=reminderTs(tremind.value);
-  if(rAt){ task.reminderAt=rAt; task.notifId=newNotifId(); }
-  TASKS.push(task); persist(); closeAll(); render();
-  if(rAt){ const ok=await notifyPermission(); if(ok) scheduleNotif(task); }
+  if(editingId){
+    const task=TASKS.find(t=>t.id===editingId);
+    if(task){
+      await cancelNotif(task);
+      task.lane=selLane; task.pri=selPri; task.text=tinput.value.trim();
+      if(det) task.detail=det; else delete task.detail;
+      if(rAt){ task.reminderAt=rAt; task.notifId=task.notifId||newNotifId(); }
+      else { delete task.reminderAt; delete task.notifId; }
+      const ref=task; persist(); closeAll(); checkGoal(); render();
+      if(rAt){ const ok=await notifyPermission(); if(ok) scheduleNotif(ref); }
+    } else { closeAll(); }
+  } else {
+    const task={id:uid(),lane:selLane,pri:selPri,text:tinput.value.trim(),done:false};
+    if(det) task.detail=det;
+    if(rAt){ task.reminderAt=rAt; task.notifId=newNotifId(); }
+    TASKS.push(task); persist(); closeAll(); render();
+    if(rAt){ const ok=await notifyPermission(); if(ok) scheduleNotif(task); }
+  }
 }
 function reminderTs(timeStr){
   if(!timeStr) return null;
@@ -563,7 +678,59 @@ pressureToggle.addEventListener('click',async ()=>{
   if(state.pressure){ const ok=await notifyPermission(); if(ok) schedulePressure(); }
   else cancelPressure();
 });
-document.getElementById('streakChip').addEventListener('click',openSettings);
+document.getElementById('streakChip').addEventListener('click',openShare);
+
+/* ---------- shareable streak card ---------- */
+const shareEl=document.getElementById('share');
+function openShare(){
+  document.getElementById('scNum').textContent=state.streak;
+  const total=TASKS.length, done=TASKS.filter(t=>t.done).length;
+  document.getElementById('scStat').textContent=done+' of '+total+' cleared today';
+  document.getElementById('scDate').textContent=new Date().toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}).toUpperCase();
+  shareEl.classList.add('open');
+}
+document.getElementById('shareClose').addEventListener('click',()=>shareEl.classList.remove('open'));
+document.getElementById('shareBtn').addEventListener('click',doShare);
+
+function streakImage(){
+  return new Promise((resolve)=>{
+    try{
+      const c=document.createElement('canvas'); c.width=1080; c.height=1080;
+      const x=c.getContext('2d');
+      const g=x.createLinearGradient(0,0,1080,1080); g.addColorStop(0,'#17211c'); g.addColorStop(1,'#0d1014');
+      x.fillStyle=g; x.fillRect(0,0,1080,1080);
+      x.strokeStyle='#1e6b48'; x.lineWidth=6; x.strokeRect(28,28,1024,1024);
+      x.textAlign='center';
+      x.font='260px serif'; x.fillText('🔥',540,400);
+      x.fillStyle='#2fb574'; x.font='800 280px Archivo, Arial, sans-serif'; x.fillText(String(state.streak),540,700);
+      x.fillStyle='#e8e9ed'; x.font='600 44px "IBM Plex Mono", monospace';
+      x.save(); x.letterSpacing='14px'; x.fillText('DAY STREAK',540,780); x.restore();
+      const total=TASKS.length, done=TASKS.filter(t=>t.done).length;
+      x.fillStyle='#8a8f9c'; x.font='500 32px "IBM Plex Mono", monospace'; x.fillText(done+' of '+total+' cleared today',540,850);
+      x.fillStyle='#e8e9ed'; x.font='800 54px Archivo, Arial, sans-serif'; x.fillText('Execulist',540,1000);
+      c.toBlob((b)=>resolve(b),'image/png');
+    }catch(e){ resolve(null); }
+  });
+}
+async function doShare(){
+  const n=state.streak;
+  const text = n>0 ? `🔥 ${n}-day streak on Execulist — my day, sorted.` : `Getting my day sorted with Execulist.`;
+  try{
+    const blob=await streakImage();
+    if(blob){
+      const file=new File([blob],'execulist-streak.png',{type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], text}); return;
+      }
+    }
+  }catch(e){}
+  try{ if(navigator.share){ await navigator.share({text}); return; } }catch(e){}
+  try{
+    const blob=await streakImage();
+    if(blob){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='execulist-streak.png'; a.click(); return; }
+  }catch(e){}
+  alert('Screenshot this card to share your streak.');
+}
 
 /* ---------- tutorial ---------- */
 const TUT=[
