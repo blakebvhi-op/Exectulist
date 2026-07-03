@@ -233,6 +233,45 @@
   .sc-brand{position:absolute;bottom:22px;font-family:'Archivo',sans-serif;font-weight:800;font-size:16px;letter-spacing:-.01em;color:var(--text)}
   .sc-brand span{color:var(--brand)}
 
+  /* paywall */
+  .pay{position:fixed;inset:0;z-index:65;background:
+      radial-gradient(900px 520px at 50% -8%, #1d2a22 0%, transparent 60%), var(--ink);
+    display:flex;flex-direction:column;align-items:center;
+    padding:calc(16px + var(--safe-top)) 22px calc(18px + var(--safe-bot));
+    opacity:0;pointer-events:none;transition:opacity .25s;overflow-y:auto}
+  .pay.open{opacity:1;pointer-events:auto}
+  .pay .tut-skip{align-self:flex-end}
+  .pay-body{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:14px;width:100%;max-width:360px;margin:auto}
+  .pay-mark{display:grid;grid-template-columns:repeat(2,26px);grid-template-rows:repeat(2,26px);gap:5px;margin-bottom:2px}
+  .pay-mark .m{border-radius:7px;background:var(--panel-2);border:1px solid var(--line)}
+  .pay-mark .m.a{background:var(--brand)}
+  .pay-title{font-family:'Archivo',sans-serif;font-weight:800;font-size:25px;letter-spacing:-.02em;line-height:1.1;max-width:300px}
+  .pay-sub{font-size:13.5px;line-height:1.5;color:var(--muted);max-width:300px}
+  .pay-benefits{display:flex;flex-direction:column;gap:8px;align-self:stretch;margin:4px 0 2px}
+  .pay-benefits div{position:relative;padding-left:26px;font-size:13px;color:var(--text);text-align:left}
+  .pay-benefits div::before{content:'✓';position:absolute;left:6px;color:var(--brand);font-weight:700}
+  .pay-plans{display:flex;flex-direction:column;gap:10px;align-self:stretch;margin-top:4px}
+  .pay-reward{align-self:stretch;background:rgba(47,181,116,.10);border:1px solid var(--brand-dim);border-radius:12px;
+    padding:10px 12px;font-size:12px;color:#bfe6d4;text-align:center;line-height:1.55;margin-top:2px}
+  .pay-reward.locked{background:var(--panel);border-color:var(--line);color:var(--muted)}
+  .pay-reward .code{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--brand);letter-spacing:.14em;font-weight:600;display:inline-block;margin-top:3px}
+  .plan-price s{color:var(--muted-2);font-size:13px;font-weight:600;margin-right:3px}
+  .plan{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel);
+    border:1.5px solid var(--line);border-radius:14px;padding:13px 15px;cursor:pointer;text-align:left}
+  .plan.sel{border-color:var(--brand);background:rgba(47,181,116,.10)}
+  .plan-name{font-family:'Archivo',sans-serif;font-weight:700;font-size:15px;display:flex;align-items:center;gap:7px}
+  .plan-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.03em}
+  .plan-price{font-family:'Archivo',sans-serif;font-weight:800;font-size:19px;white-space:nowrap}
+  .plan-price span{font-size:12px;color:var(--muted-2);font-weight:600}
+  .badge{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;
+    background:var(--brand);color:#062015;border-radius:99px;padding:2px 7px;font-weight:600}
+  .pay-cta{width:100%;max-width:360px;margin-top:16px}
+  .pay-fine{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted-2);text-align:center;margin-top:10px;letter-spacing:.02em;line-height:1.5}
+  .pay-links{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:10px;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted-2)}
+  .pay-links button,.pay-links span{background:none;border:none;color:var(--muted-2);font:inherit;cursor:pointer;letter-spacing:.02em}
+  .pay-links button:active{color:var(--text)}
+
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -311,6 +350,13 @@
     </div>
     <button class="chip" id="replayTut" type="button">Replay</button>
   </div>
+  <div class="setrow">
+    <div class="txt">
+      <div class="t1">Execulist Premium</div>
+      <div class="t2">Unlock the full app. 3-day free trial, then $4.99/wk or $24.99/yr.</div>
+    </div>
+    <button class="chip" id="upgradeBtn" type="button">Upgrade</button>
+  </div>
   <div class="setstat" id="setstat">Streak: 0 days</div>
 </div>
 
@@ -357,9 +403,40 @@
     <div class="sc-num" id="scNum">0</div>
     <div class="sc-lbl">Day Streak</div>
     <div class="sc-stat" id="scStat">0 of 0 cleared today</div>
+    <div class="sc-stat" id="scChallenge" style="margin-top:2px"></div>
     <div class="sc-brand">Execu<span>list</span></div>
   </div>
   <button class="tut-next" id="shareBtn" style="max-width:340px;width:100%">Share my streak</button>
+</div>
+
+<!-- paywall -->
+<div class="pay" id="pay">
+  <button class="tut-skip" id="payClose">Maybe later</button>
+  <div class="pay-body">
+    <div class="pay-mark"><span class="m a"></span><span class="m"></span><span class="m"></span><span class="m"></span></div>
+    <div class="pay-title">Run your day like an operator</div>
+    <div class="pay-sub">Batch your calls, hold your streak, and keep the whole day in one glance.</div>
+    <div class="pay-benefits">
+      <div>Four-lane command board</div>
+      <div>Streaks &amp; pressure that keep you honest</div>
+      <div>Reminders, tap-to-act, and daily notes</div>
+      <div>No ads — ever</div>
+    </div>
+    <div class="pay-reward locked" id="payReward"></div>
+    <div class="pay-plans">
+      <button class="plan sel" data-plan="weekly" type="button">
+        <div class="plan-l"><div class="plan-name">Weekly</div><div class="plan-tag">3-day free trial</div></div>
+        <div class="plan-price">$4.99<span>/wk</span></div>
+      </button>
+      <button class="plan" data-plan="yearly" type="button">
+        <div class="plan-l"><div class="plan-name">Yearly <span class="badge">Best value</span></div><div class="plan-tag">Billed once a year</div></div>
+        <div class="plan-price">$24.99<span>/yr</span></div>
+      </button>
+    </div>
+  </div>
+  <button class="tut-next pay-cta" id="payCta">Start 3-day free trial</button>
+  <div class="pay-fine" id="payFine">3 days free, then $4.99/week. Cancel anytime.</div>
+  <div class="pay-links"><button id="payRestore" type="button">Restore purchases</button><span>·</span><span>Terms</span><span>·</span><span>Privacy</span></div>
 </div>
 
 <script>
@@ -420,8 +497,8 @@ function loadTasks(){
 function saveTasks(list){ try{ localStorage.setItem(STORE_KEY,JSON.stringify(list)); }catch(e){} }
 function persist(){ saveTasks(TASKS); }
 function loadState(){
-  try{ const raw=localStorage.getItem(STATE_KEY); if(raw){ const s=JSON.parse(raw); if(s&&typeof s==='object') return Object.assign({streak:0,lastGoalDay:null,lastOpenDay:null,pressure:false,onboarded:false,note:''}, s); } }catch(e){}
-  return {streak:0,lastGoalDay:null,lastOpenDay:null,pressure:false,onboarded:false,note:''};
+  try{ const raw=localStorage.getItem(STATE_KEY); if(raw){ const s=JSON.parse(raw); if(s&&typeof s==='object') return Object.assign({streak:0,lastGoalDay:null,lastOpenDay:null,pressure:false,onboarded:false,note:'',subscribed:false,bestStreak:0,challengeDone:false,rewardCode:''}, s); } }catch(e){}
+  return {streak:0,lastGoalDay:null,lastOpenDay:null,pressure:false,onboarded:false,note:'',subscribed:false,bestStreak:0,challengeDone:false,rewardCode:''};
 }
 function saveState(){ try{ localStorage.setItem(STATE_KEY,JSON.stringify(state)); }catch(e){} }
 function uid(){ return 't'+Date.now()+Math.random().toString(36).slice(2,7); }
@@ -463,8 +540,23 @@ function checkGoal(){
   const today=dayKey(new Date());
   if(state.lastGoalDay===today) return; // already counted today
   state.streak = (state.lastGoalDay===yesterdayKey()) ? state.streak+1 : 1;
-  state.lastGoalDay=today; saveState();
-  celebrate(state.streak);
+  state.lastGoalDay=today;
+  if(state.streak > (state.bestStreak||0)) state.bestStreak=state.streak;
+  if(!state.challengeDone && state.streak>=14){
+    state.challengeDone=true;
+    if(!state.rewardCode) state.rewardCode=genRewardCode();
+    saveState();
+    celebrateChallenge();
+  } else {
+    saveState();
+    celebrate(state.streak);
+  }
+}
+function genRewardCode(){
+  const s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let a='',b='';
+  for(let i=0;i<4;i++) a+=s[Math.floor(Math.random()*s.length)];
+  for(let i=0;i<4;i++) b+=s[Math.floor(Math.random()*s.length)];
+  return 'EXEC-'+a+'-'+b;
 }
 
 /* ---------- render ---------- */
@@ -560,10 +652,23 @@ function renderNudge(){
 let toastTimer=null;
 function celebrate(n){
   const t=document.getElementById('toast');
+  t.querySelector('.big').textContent='🔥';
+  t.querySelector('.sub').textContent='streak';
   document.getElementById('toastN').textContent = n+(n===1?' day':' days');
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>t.classList.remove('show'), 1900);
+}
+function celebrateChallenge(){
+  const t=document.getElementById('toast');
+  t.querySelector('.big').textContent='🏆';
+  document.getElementById('toastN').textContent='$2 OFF';
+  t.querySelector('.sub').textContent='challenge complete';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{ t.classList.remove('show');
+    setTimeout(()=>{ t.querySelector('.big').textContent='🔥'; t.querySelector('.sub').textContent='streak'; },320);
+  }, 2600);
 }
 
 /* date */
@@ -735,7 +840,10 @@ function openSettings(){
   openScrim(); setsheet.classList.add('open');
   pressureToggle.classList.toggle('on', !!state.pressure);
   setstat.textContent='Streak: '+state.streak+(state.streak===1?' day':' days');
+  const ub=document.getElementById('upgradeBtn');
+  if(state.subscribed){ ub.textContent='Active ✓'; ub.disabled=true; } else { ub.textContent='Upgrade'; ub.disabled=false; }
 }
+document.getElementById('upgradeBtn').addEventListener('click',()=>{ closeAll(); setTimeout(openPaywall,180); });
 gearBtn.addEventListener('click',openSettings);
 pressureToggle.addEventListener('click',async ()=>{
   state.pressure=!state.pressure; saveState();
@@ -796,6 +904,8 @@ function openShare(){
   document.getElementById('scNum').textContent=state.streak;
   const total=TASKS.length, done=TASKS.filter(t=>t.done).length;
   document.getElementById('scStat').textContent=done+' of '+total+' cleared today';
+  const best=Math.min(state.bestStreak||0,14);
+  document.getElementById('scChallenge').textContent = state.challengeDone ? '🏆 14-day challenge complete' : ('Challenge: '+best+'/14 to $2 off');
   document.getElementById('scDate').textContent=new Date().toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}).toUpperCase();
   shareEl.classList.add('open');
 }
@@ -888,11 +998,97 @@ function renderTut(){
   document.getElementById('tutNext').textContent = tutIdx===TUT.length-1 ? 'Start' : 'Next';
 }
 function openTutorial(i){ tutIdx=i||0; renderTut(); tutEl.classList.add('open'); }
-function finishTutorial(){ tutEl.classList.remove('open'); state.onboarded=true; saveState(); }
+function finishTutorial(){ tutEl.classList.remove('open'); state.onboarded=true; saveState(); if(!state.subscribed) setTimeout(openPaywall,180); }
 document.getElementById('tutSkip').addEventListener('click',finishTutorial);
 document.getElementById('tutBack').addEventListener('click',()=>{ if(tutIdx>0){ tutIdx--; renderTut(); } });
 document.getElementById('tutNext').addEventListener('click',()=>{ if(tutIdx<TUT.length-1){ tutIdx++; renderTut(); } else finishTutorial(); });
 document.getElementById('replayTut').addEventListener('click',()=>{ closeAll(); openTutorial(0); });
+
+/* ---------- paywall ----------
+   BILLING INTEGRATION (do at wrap time):
+   1. npm install @revenuecat/purchases-capacitor  (then npx cap sync)
+   2. Google Play Console: create subscription products execulist_weekly (with a 3-DAY free trial)
+      and execulist_yearly. In RevenueCat: add app, add products, an "offering", entitlement "premium".
+   3. Replace the stubs in startPurchase()/restore() with getOfferings() -> purchasePackage()
+      and check customerInfo.entitlements.active['premium'], then call grantPremium().
+
+   CHALLENGE DISCOUNT ($2 off after a 14-day streak) — two real paths:
+   - iOS: pre-generate a batch of App Store OFFER CODES for a "$2 off" offer in App Store Connect.
+     When state.challengeDone, hand the user one unused code (map codes->users) and call
+     Purchases/StoreKit presentCodeRedemptionSheet. state.rewardCode is the per-user token to display.
+   - Android: Play doesn't do redeemable subscription promo codes. Instead create a discounted
+     subscription OFFER with developer-determined eligibility, mark challenge-winners eligible, and
+     present that discounted package here (getOfferings will return it for eligible users).
+   - RevenueCat manages this cross-platform: show the discounted offering to state.challengeDone users.
+   5. Hard gate (block app until subscribed): guard boot with if(!state.subscribed) openPaywall(); and
+      remove the "Maybe later" dismissal.
+*/
+const PRICING={
+  weekly:{ id:'execulist_weekly', price:4.99, per:'/wk', word:'week', trial:'3-day free trial' },
+  yearly:{ id:'execulist_yearly', price:24.99, per:'/yr', word:'year', trial:null }
+};
+const REWARD_OFF=2;
+let selPlan='weekly';
+const payEl=document.getElementById('pay');
+function openPaywall(){ updatePaywall(); payEl.classList.add('open'); }
+function closePaywall(){ payEl.classList.remove('open'); }
+function updatePaywall(){
+  const won=!!state.challengeDone;
+  const strip=document.getElementById('payReward');
+  strip.classList.toggle('locked', !won);
+  if(won){
+    strip.innerHTML='🎉 14-day challenge complete — <b>$2 off</b> unlocked<br><span class="code">'+esc(state.rewardCode||'')+'</span>';
+  } else {
+    const best=Math.min(state.bestStreak||0,14);
+    strip.innerHTML='🏆 Build a <b>14-day streak</b> to unlock $2 off · best '+best+'/14';
+  }
+  [...payEl.querySelectorAll('.plan')].forEach(el=>{
+    const pk=PRICING[el.dataset.plan]; const disc=won?(pk.price-REWARD_OFF):pk.price;
+    const pe=el.querySelector('.plan-price');
+    pe.innerHTML = won ? '<s>$'+pk.price.toFixed(2)+'</s> $'+disc.toFixed(2)+'<span>'+pk.per+'</span>'
+                       : '$'+pk.price.toFixed(2)+'<span>'+pk.per+'</span>';
+  });
+  selectPlan(selPlan);
+}
+function selectPlan(p){
+  selPlan=p;
+  [...payEl.querySelectorAll('.plan')].forEach(el=>el.classList.toggle('sel', el.dataset.plan===p));
+  const pk=PRICING[p], won=!!state.challengeDone, disc=(won?(pk.price-REWARD_OFF):pk.price).toFixed(2);
+  document.getElementById('payCta').textContent = pk.trial ? ('Start '+pk.trial) : ('Continue — $'+disc+pk.per);
+  let fine = pk.trial ? (pk.trial+', then $'+disc+'/'+pk.word+'. Cancel anytime.') : ('$'+disc+'/'+pk.word+'. Cancel anytime.');
+  if(won) fine += ' $2 challenge discount applied.';
+  document.getElementById('payFine').textContent = fine;
+}
+[...payEl.querySelectorAll('.plan')].forEach(el=>el.addEventListener('click',()=>selectPlan(el.dataset.plan)));
+document.getElementById('payClose').addEventListener('click',closePaywall);
+
+function rcPurchases(){ return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases) || null; }
+async function startPurchase(){
+  const P=rcPurchases();
+  if(P){
+    try{
+      const off=await P.getOfferings();
+      // TODO wrap-time: find the package matching PRICING[selPlan].id in off.current and:
+      //   const res = await P.purchasePackage({ aPackage: pkg });
+      //   if (res.customerInfo.entitlements.active['premium']) { grantPremium(); }
+      alert('RevenueCat is connected — complete purchasePackage() for '+PRICING[selPlan].id+' here.');
+    }catch(e){ alert('Purchase could not be started.'); }
+  } else {
+    alert('Payments switch on once the app is wrapped with the RevenueCat plugin and your store products are live. This screen is ready for that step.');
+  }
+}
+function grantPremium(){ state.subscribed=true; saveState(); closePaywall(); render(); }
+async function restore(){
+  const P=rcPurchases();
+  if(P){
+    try{ const info=await P.restorePurchases();
+      if(info && info.customerInfo && info.customerInfo.entitlements.active['premium']) grantPremium();
+      else alert('No active subscription found to restore.');
+    }catch(e){ alert('Could not restore purchases.'); }
+  } else { alert('Restore works in the wrapped app once billing is connected.'); }
+}
+document.getElementById('payCta').addEventListener('click',startPurchase);
+document.getElementById('payRestore').addEventListener('click',restore);
 
 /* ---------- boot ---------- */
 rolloverIfNewDay();
