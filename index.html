@@ -178,6 +178,36 @@
   .tv-pri .pri{width:26px;height:26px;font-size:13px}
   .tv-flame{font-size:96px;line-height:1;filter:drop-shadow(0 6px 24px rgba(47,181,116,.4))}
 
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 16px;padding-bottom:calc(8px + var(--safe-bot));border-top:1px solid var(--line-soft);flex-shrink:0}
+  .clear{background:none;border:none;color:var(--muted-2);font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:6px 8px}
+  .clear:active{color:var(--text)}
+  .tomorrow-btn{background:rgba(47,181,116,.12);border:1px solid var(--brand-dim);color:#bfe6d4;border-radius:99px;
+    padding:8px 14px;font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px}
+  .tomorrow-btn:active{transform:scale(.97)}
+  .tomorrow-btn span{font-family:'IBM Plex Mono',monospace;background:var(--brand-dim);color:#e4f6ee;border-radius:99px;padding:1px 8px;font-size:11px}
+  .tom-hint{font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+  .tom-list{display:flex;flex-direction:column;gap:7px;max-height:42vh;overflow-y:auto;margin-bottom:12px;
+    scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  .tom-list::-webkit-scrollbar{width:4px}.tom-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
+  .tom-empty{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted-2);text-align:center;padding:20px 6px;opacity:.7;letter-spacing:.04em}
+  .tom-row{display:flex;align-items:center;gap:9px;background:var(--base);border:1px solid var(--line);border-radius:11px;padding:9px 8px}
+  .tom-row .body{flex:1;min-width:0;cursor:pointer}
+  .tom-row .ttext{font-size:13px;font-weight:500;word-break:break-word}
+  .tom-row .lane{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted-2);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+  .tom-add{width:100%;justify-content:center;color:var(--brand);border-color:var(--brand-dim);margin-bottom:12px}
+  .daynote{flex:1;min-width:0;text-align:left;background:none;border:none;color:var(--text);font-family:'IBM Plex Sans',sans-serif;
+    font-size:12px;cursor:pointer;padding:6px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .daynote.empty{color:var(--muted-2);font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+  .drawer-div{height:1px;background:var(--line-soft);margin:4px 0 12px}
+  .drawer-line{width:100%;text-align:left;background:var(--base);border:1px solid var(--line);border-radius:11px;padding:12px 14px;
+    color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;margin-bottom:10px;
+    display:flex;justify-content:space-between;align-items:center}
+  .drawer-line:active{border-color:var(--muted-2)}
+  .drawer-line .chev{color:var(--muted-2);font-size:11px}
+  #notesArea{width:100%;background:var(--base);border:1px solid var(--line);border-radius:11px;padding:12px;color:var(--text);
+    font-family:inherit;font-size:14px;min-height:96px;resize:vertical;margin-bottom:10px;line-height:1.5}
+  #notesArea:focus{outline:none;border-color:var(--brand)}
+
   .del-task{width:100%;background:none;border:none;color:var(--p1);font-family:'IBM Plex Mono',monospace;
     font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:14px 0 2px;opacity:.75}
   .del-task:active{opacity:1}
@@ -233,7 +263,10 @@
   <div class="nudge calm" id="nudge"><span class="dot"></span><span id="nudgeText">—</span></div>
 
   <div class="grid" id="grid"></div>
-  <div class="foot"><button class="clear" id="clearBtn">Clear cleared tasks</button></div>
+  <div class="foot">
+    <button class="daynote empty" id="dayNoteBtn"><span id="dayNoteText">＋ Note for today</span></button>
+    <button class="tomorrow-btn" id="tomorrowBtn">🌙 Tomorrow <span id="tomCount">0</span></button>
+  </div>
 </div>
 
 <button class="fab" id="fab" aria-label="New task">+</button>
@@ -279,6 +312,22 @@
     <button class="chip" id="replayTut" type="button">Replay</button>
   </div>
   <div class="setstat" id="setstat">Streak: 0 days</div>
+</div>
+
+<!-- tomorrow's list drawer -->
+<div class="sheet" id="tomsheet" role="dialog" aria-label="Tomorrow's list">
+  <h3>Tomorrow’s list 🌙</h3>
+  <div class="tom-hint">Line up tomorrow before you clock out. These land on your board in the morning.</div>
+  <div class="tom-list" id="tomList"></div>
+  <button class="chip tom-add" id="tomAdd" type="button">+ Add task for tomorrow</button>
+  <button class="add" id="tomDone">Mark tomorrow’s list as made</button>
+
+  <div class="drawer-div"></div>
+  <button class="drawer-line" id="notesToggle">📝 Day notes <span class="chev">▾</span></button>
+  <div id="notesWrap" style="display:none">
+    <textarea id="notesArea" placeholder="Anything to keep on hand today — gate codes, part numbers, reminders…"></textarea>
+  </div>
+  <button class="drawer-line" id="clearInDrawer">🧹 Clear completed tasks</button>
 </div>
 
 <!-- streak toast -->
@@ -371,8 +420,8 @@ function loadTasks(){
 function saveTasks(list){ try{ localStorage.setItem(STORE_KEY,JSON.stringify(list)); }catch(e){} }
 function persist(){ saveTasks(TASKS); }
 function loadState(){
-  try{ const raw=localStorage.getItem(STATE_KEY); if(raw){ const s=JSON.parse(raw); if(s&&typeof s==='object') return Object.assign({streak:0,lastGoalDay:null,lastOpenDay:null,pressure:false,onboarded:false}, s); } }catch(e){}
-  return {streak:0,lastGoalDay:null,lastOpenDay:null,pressure:false,onboarded:false};
+  try{ const raw=localStorage.getItem(STATE_KEY); if(raw){ const s=JSON.parse(raw); if(s&&typeof s==='object') return Object.assign({streak:0,lastGoalDay:null,lastOpenDay:null,pressure:false,onboarded:false,note:''}, s); } }catch(e){}
+  return {streak:0,lastGoalDay:null,lastOpenDay:null,pressure:false,onboarded:false,note:''};
 }
 function saveState(){ try{ localStorage.setItem(STATE_KEY,JSON.stringify(state)); }catch(e){} }
 function uid(){ return 't'+Date.now()+Math.random().toString(36).slice(2,7); }
@@ -380,8 +429,9 @@ function uid(){ return 't'+Date.now()+Math.random().toString(36).slice(2,7); }
 /* ---------- day / streak helpers ---------- */
 function dayKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function yesterdayKey(){ const d=new Date(); d.setDate(d.getDate()-1); return dayKey(d); }
-function onesAllDone(){ const ones=TASKS.filter(t=>t.pri===1); return ones.length>0 && ones.every(t=>t.done); }
-function openOnes(){ return TASKS.filter(t=>t.pri===1 && !t.done).length; }
+function todayTasks(){ return TASKS.filter(t=>t.when!=='tomorrow'); }
+function onesAllDone(){ const ones=todayTasks().filter(t=>t.pri===1); return ones.length>0 && ones.every(t=>t.done); }
+function openOnes(){ return todayTasks().filter(t=>t.pri===1 && !t.done).length; }
 
 function rolloverIfNewDay(){
   const today=dayKey(new Date());
@@ -395,6 +445,7 @@ function rolloverIfNewDay(){
       const kept=[];
       TASKS.forEach(t=>{
         if(t.ritual){ t.done=false; kept.push(t); return; } // ritual resets, always stays
+        if(t.when==='tomorrow'){ t.when='today'; t.done=false; kept.push(t); return; } // planned -> today's board
         if(t.done){ cancelNotif(t); return; }               // finished -> cleared for the new day
         if(t.pri===2) t.pri=1;                              // "tomorrow" is now "today"
         kept.push(t);
@@ -421,7 +472,7 @@ const grid=document.getElementById('grid');
 function render(){
   grid.innerHTML='';
   QUADS.forEach(q=>{
-    const items=TASKS.filter(t=>t.lane===q.key).sort((a,b)=>a.pri-b.pri);
+    const items=TASKS.filter(t=>t.lane===q.key && t.when!=='tomorrow').sort((a,b)=>a.pri-b.pri);
     const open=items.filter(t=>!t.done).length;
     const quad=document.createElement('div'); quad.className='quad';
     quad.innerHTML=`<div class="qhead"><div class="qicon">${ICONS[q.key]}</div><div class="qname">${q.name}</div><div class="qcount">${open}</div></div><div class="qlist"></div>`;
@@ -431,7 +482,7 @@ function render(){
       const row=document.createElement('div');
       row.className='task'+(t.done?' done':'')+(t.ritual?' ritual':'');
       let meta='';
-      if(t.ritual){ meta=`<div class="tag">Every day · standing #1</div>`; }
+      if(t.ritual){ meta=`<div class="tag">Tap to plan tomorrow →</div>`; }
       else{
         const bits=[];
         if(t.meta) bits.push(esc(t.meta));
@@ -441,16 +492,18 @@ function render(){
       }
       const canAct = t.detail && (t.lane==='see'||t.lane==='call'||t.lane==='send');
       const actBtn = canAct ? `<button class="act" aria-label="Open">${ICONS[t.lane]}</button>` : '';
-      row.innerHTML=`<span class="pri l${t.pri}">${t.pri}</span><div class="body"><div class="ttext">${esc(t.text)}</div>${meta}</div>${actBtn}<button class="del" aria-label="Delete">${ICONS.trash}</button>`;
+      const delBtn = t.ritual ? '' : `<button class="del" aria-label="Delete">${ICONS.trash}</button>`;
+      row.innerHTML=`<span class="pri l${t.pri}">${t.pri}</span><div class="body"><div class="ttext">${esc(t.text)}</div>${meta}</div>${actBtn}${delBtn}`;
       row.querySelector('.body').addEventListener('click',()=>{
         if(row._lp){ row._lp=false; return; } // long-press fired; ignore this tap
+        if(t.ritual){ openTomorrow(); return; } // making tomorrow's list opens the planner
         t.done=!t.done;
         if(t.done) cancelNotif(t); else if(t.reminderAt && t.reminderAt>Date.now()) scheduleNotif(t);
         persist(); checkGoal(); render();
       });
       if(!t.ritual) attachLongPress(row, ()=>openTaskSheet(t));
       const ab=row.querySelector('.act'); if(ab) ab.addEventListener('click',(ev)=>{ ev.stopPropagation(); actOn(t); });
-      row.querySelector('.del').addEventListener('click',(ev)=>{
+      const db=row.querySelector('.del'); if(db) db.addEventListener('click',(ev)=>{
         ev.stopPropagation();
         if(confirm('Delete this task?')){ cancelNotif(t); TASKS=TASKS.filter(x=>x.id!==t.id); persist(); checkGoal(); render(); }
       });
@@ -458,12 +511,15 @@ function render(){
     });
     grid.appendChild(quad);
   });
-  const total=TASKS.length, done=TASKS.filter(t=>t.done).length;
+  const dt=TASKS.filter(t=>t.when!=='tomorrow');
+  const total=dt.length, done=dt.filter(t=>t.done).length;
   document.getElementById('cleared').textContent=done;
   document.getElementById('total').textContent=total;
   document.getElementById('barfill').style.width=(total?done/total*100:0)+'%';
   renderStreak();
   renderNudge();
+  updateTomCount();
+  updateDayNote();
 }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function fmtTime(ts){ try{ return new Date(ts).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
@@ -475,7 +531,7 @@ function renderStreak(){
   chip.classList.toggle('cold', state.streak===0);
 }
 function computeNudge(){
-  const ones=TASKS.filter(t=>t.pri===1);
+  const ones=TASKS.filter(t=>t.pri===1 && t.when!=='tomorrow');
   const open=ones.filter(t=>!t.done).length;
   const late=new Date().getHours()>=18;
   const s=state.streak;
@@ -515,10 +571,10 @@ function celebrate(n){
   document.getElementById('date').textContent=d.toLocaleDateString(undefined,opt).replace(',',' ·').toUpperCase(); })();
 
 /* clear done */
-document.getElementById('clearBtn').addEventListener('click',()=>{
-  const doneOnes=TASKS.filter(t=>t.done); if(!doneOnes.length) return;
+document.getElementById('clearInDrawer').addEventListener('click',()=>{
+  const doneOnes=TASKS.filter(t=>t.done); if(!doneOnes.length){ return; }
   if(confirm('Remove '+doneOnes.length+' cleared task'+(doneOnes.length>1?'s':'')+'?')){
-    doneOnes.forEach(cancelNotif); TASKS=TASKS.filter(t=>!t.done); persist(); render();
+    doneOnes.forEach(cancelNotif); TASKS=TASKS.filter(t=>!t.done); persist(); closeAll(); render();
   }
 });
 
@@ -527,7 +583,8 @@ const scrim=document.getElementById('scrim');
 const sheet=document.getElementById('sheet'), setsheet=document.getElementById('setsheet');
 const fab=document.getElementById('fab'), addbtn=document.getElementById('addbtn'), tinput=document.getElementById('tinput'), tremind=document.getElementById('tremind'), tdetail=document.getElementById('tdetail');
 const detailWrap=document.getElementById('detailWrap'), detailLabel=document.getElementById('detailLabel');
-let selLane=null, selPri=null, editingId=null;
+let selLane=null, selPri=null, editingId=null, sheetWhen='today';
+function markRitualMade(){ const r=TASKS.find(t=>t.ritual); if(r && !r.done){ r.done=true; } }
 const editDeleteBtn=document.getElementById('editDelete');
 function attachLongPress(row, onLong){
   let timer=null;
@@ -563,8 +620,9 @@ function openScrim(){ scrim.classList.add('open'); }
 function closeAll(){
   scrim.classList.remove('open');
   sheet.classList.remove('open'); setsheet.classList.remove('open');
+  const ts=document.getElementById('tomsheet'); if(ts) ts.classList.remove('open');
   const sh=document.getElementById('share'); if(sh) sh.classList.remove('open');
-  editingId=null;
+  editingId=null; sheetWhen='today';
   selLane=selPri=null; tinput.value=''; tremind.value=''; tdetail.value=''; detailWrap.style.display='none'; [...laneWrap.children,...priWrap.children].forEach(x=>x.classList.remove('sel')); ready();
 }
 function selectLaneChip(lane){
@@ -577,11 +635,13 @@ function selectPriChip(p){
   if(p>=1&&p<=4){ priWrap.children[p-1].classList.add('sel'); selPri=p; }
 }
 function hhmm(ts){ const d=new Date(ts); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
-function openTaskSheet(task){
+function openTaskSheet(task, whenDefault){
   editingId = task ? task.id : null;
-  document.querySelector('#sheet h3').textContent = task ? 'Edit task' : 'New task';
-  addbtn.textContent = task ? 'Save changes' : 'Add to Execulist';
+  sheetWhen = task ? (task.when||'today') : (whenDefault||'today');
+  document.querySelector('#sheet h3').textContent = task ? 'Edit task' : (sheetWhen==='tomorrow' ? 'Add for tomorrow' : 'New task');
+  addbtn.textContent = task ? 'Save changes' : (sheetWhen==='tomorrow' ? 'Add to tomorrow' : 'Add to Execulist');
   editDeleteBtn.style.display = task ? 'block' : 'none';
+  setsheet.classList.remove('open'); document.getElementById('tomsheet').classList.remove('open');
   selLane=selPri=null; tinput.value=''; tremind.value=''; tdetail.value=''; detailWrap.style.display='none';
   [...laneWrap.children,...priWrap.children].forEach(x=>x.classList.remove('sel'));
   if(task){
@@ -609,9 +669,11 @@ async function submit(){
   if(addbtn.disabled) return;
   const det=(DETAIL_CFG[selLane] && tdetail.value.trim()) ? tdetail.value.trim() : '';
   const rAt=reminderTs(tremind.value);
+  let wasTomorrow=false;
   if(editingId){
     const task=TASKS.find(t=>t.id===editingId);
     if(task){
+      wasTomorrow = task.when==='tomorrow';
       await cancelNotif(task);
       task.lane=selLane; task.pri=selPri; task.text=tinput.value.trim();
       if(det) task.detail=det; else delete task.detail;
@@ -621,12 +683,16 @@ async function submit(){
       if(rAt){ const ok=await notifyPermission(); if(ok) scheduleNotif(ref); }
     } else { closeAll(); }
   } else {
-    const task={id:uid(),lane:selLane,pri:selPri,text:tinput.value.trim(),done:false};
+    const task={id:uid(),lane:selLane,pri:selPri,text:tinput.value.trim(),done:false,when:sheetWhen};
     if(det) task.detail=det;
     if(rAt){ task.reminderAt=rAt; task.notifId=newNotifId(); }
-    TASKS.push(task); persist(); closeAll(); render();
+    TASKS.push(task);
+    wasTomorrow = sheetWhen==='tomorrow';
+    if(wasTomorrow) markRitualMade();
+    persist(); closeAll(); if(wasTomorrow) checkGoal(); render();
     if(rAt){ const ok=await notifyPermission(); if(ok) scheduleNotif(task); }
   }
+  if(wasTomorrow) openTomorrow();
 }
 function reminderTs(timeStr){
   if(!timeStr) return null;
@@ -679,6 +745,50 @@ pressureToggle.addEventListener('click',async ()=>{
   else cancelPressure();
 });
 document.getElementById('streakChip').addEventListener('click',openShare);
+
+/* ---------- tomorrow's list drawer ---------- */
+const tomsheet=document.getElementById('tomsheet'), tomList=document.getElementById('tomList');
+const notesArea=document.getElementById('notesArea');
+function updateTomCount(){ document.getElementById('tomCount').textContent=TASKS.filter(t=>t.when==='tomorrow').length; }
+function updateDayNote(){
+  const n=(state.note||'').trim();
+  document.getElementById('dayNoteText').textContent = n ? n : '＋ Note for today';
+  document.getElementById('dayNoteBtn').classList.toggle('empty', !n);
+}
+function openTomorrow(expandNotes){
+  renderTomorrow();
+  const w=document.getElementById('notesWrap');
+  if(expandNotes){ w.style.display='block'; notesArea.value=state.note||''; }
+  else { w.style.display='none'; }
+  openScrim(); tomsheet.classList.add('open');
+  if(expandNotes) setTimeout(()=>notesArea.focus(),250);
+}
+function renderTomorrow(){
+  const items=TASKS.filter(t=>t.when==='tomorrow').sort((a,b)=>a.pri-b.pri);
+  tomList.innerHTML='';
+  if(!items.length){ const e=document.createElement('div'); e.className='tom-empty'; e.textContent='Nothing lined up yet.'; tomList.appendChild(e); }
+  items.forEach(t=>{
+    const row=document.createElement('div'); row.className='tom-row';
+    row.innerHTML=`<span class="pri l${t.pri}">${t.pri}</span><div class="body"><div class="ttext">${esc(t.text)}</div><div class="lane">${laneName(t.lane)}</div></div><button class="del" aria-label="Delete">${ICONS.trash}</button>`;
+    row.querySelector('.body').addEventListener('click',()=>openTaskSheet(t));
+    row.querySelector('.del').addEventListener('click',(ev)=>{ ev.stopPropagation();
+      const rr=TASKS.find(x=>x.id===t.id); if(rr) cancelNotif(rr);
+      TASKS=TASKS.filter(x=>x.id!==t.id); persist(); renderTomorrow(); render();
+    });
+    tomList.appendChild(row);
+  });
+}
+document.getElementById('tomorrowBtn').addEventListener('click',()=>openTomorrow(false));
+document.getElementById('dayNoteBtn').addEventListener('click',()=>openTomorrow(true));
+document.getElementById('tomAdd').addEventListener('click',()=>openTaskSheet(null,'tomorrow'));
+document.getElementById('tomDone').addEventListener('click',()=>{ markRitualMade(); persist(); closeAll(); checkGoal(); render(); });
+document.getElementById('notesToggle').addEventListener('click',()=>{
+  const w=document.getElementById('notesWrap');
+  const opening = (w.style.display==='none' || !w.style.display);
+  w.style.display = opening ? 'block' : 'none';
+  if(opening){ notesArea.value=state.note||''; setTimeout(()=>notesArea.focus(),50); }
+});
+notesArea.addEventListener('input',()=>{ state.note=notesArea.value; saveState(); updateDayNote(); });
 
 /* ---------- shareable streak card ---------- */
 const shareEl=document.getElementById('share');
